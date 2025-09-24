@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { QuizStorage } from '@/services/quizStorage';
-import { Play, Settings, RotateCcw, Trophy, User, LogOut } from 'lucide-react';
+import { Play, Settings, RotateCcw, Trophy, User, LogOut, Crown, Medal, Award } from 'lucide-react';
 
 interface MenuScreenProps {
   userName: string;
@@ -24,10 +24,24 @@ export const MenuScreen = ({
   onLogout 
 }: MenuScreenProps) => {
   const user = QuizStorage.getUser(userName);
+  const topUsers = QuizStorage.getTopUsers(5);
   
   const handleResetAll = () => {
     if (window.confirm('Tem certeza que deseja apagar TODAS as questões e pontuações? Esta ação não pode ser desfeita!')) {
       onResetAll();
+    }
+  };
+
+  const getRankIcon = (position: number) => {
+    switch (position) {
+      case 1:
+        return <Crown className="w-5 h-5 text-yellow-500" />;
+      case 2:
+        return <Medal className="w-5 h-5 text-gray-400" />;
+      case 3:
+        return <Award className="w-5 h-5 text-amber-600" />;
+      default:
+        return <Trophy className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -118,6 +132,73 @@ export const MenuScreen = ({
               </Button>
             </CardContent>
           </Card>
+
+        {/* Top 5 Ranking */}
+          {topUsers.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-primary" />
+                  Ranking Top 5
+                </CardTitle>
+                <CardDescription>
+                  Os melhores jogadores do quiz
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {topUsers.map((topUser, index) => {
+                    const position = index + 1;
+                    const isCurrentUser = topUser.name.toLowerCase() === userName.toLowerCase();
+                    
+                    return (
+                      <div
+                        key={topUser.name}
+                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                          isCurrentUser 
+                            ? 'bg-primary/5 border-primary/20' 
+                            : 'bg-muted/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8">
+                            {getRankIcon(position)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-medium ${isCurrentUser ? 'text-primary' : ''}`}>
+                                {topUser.name}
+                              </span>
+                              {isCurrentUser && (
+                                <Badge variant="outline" className="text-xs">
+                                  Você
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {topUser.questionsAnswered} questões respondidas
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-lg">{topUser.score}</div>
+                          <div className="text-xs text-muted-foreground">pontos</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {topUsers.length < 5 && (
+                  <div className="mt-3 p-3 border-2 border-dashed border-muted rounded-lg text-center">
+                    <p className="text-sm text-muted-foreground">
+                      {5 - topUsers.length} posições ainda disponíveis no ranking!
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Actions Row */}
           <div className="grid grid-cols-2 gap-4">

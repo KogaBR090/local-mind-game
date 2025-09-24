@@ -87,6 +87,14 @@ export const QuizStorage = {
     this.saveUsers(users);
   },
 
+  // Rankings
+  getTopUsers(limit: number = 5): User[] {
+    const users = this.getUsers();
+    return users
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+  },
+
   // Complete reset
   clearAll(): void {
     try {
